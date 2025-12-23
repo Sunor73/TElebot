@@ -1,8 +1,9 @@
+import os
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
 # Замените на ваш токен бота
-BOT_TOKEN = '7982082856:AAF37y6zH9hjoHB8KV6jKS7HdHVXMIdja6U'
+BOT_TOKEN = os.getenv('BOT_TOKEN', 'YOUR_BOT_TOKEN_HERE')
 
 # ID администратора, который будет получать сообщения
 ADMIN_ID = 5178829144
