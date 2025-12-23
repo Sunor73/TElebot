@@ -1,8 +1,10 @@
+
+import os
+import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
-import asyncio
-import os
 from aiohttp import web
+
 # Токен бота из переменных окружения
 BOT_TOKEN = os.getenv('BOT_TOKEN', 'YOUR_BOT_TOKEN_HERE')
 
@@ -97,6 +99,7 @@ async def web_server():
    
     app = web.Application()
     app.router.add_get('/', handle)
+    app.router.add_get('/health', handle)
    
     # Render использует переменную PORT
     port = int(os.getenv('PORT', 10000))
@@ -106,8 +109,8 @@ async def web_server():
     await site.start()
     print(f"🌐 Веб-сервер запущен на порту {port}")
 
-def main():
-    """Запуск бота"""
+async def main():
+    """Запуск бота и веб-сервера"""
     # Создаём приложение
     application = Application.builder().token(BOT_TOKEN).build()
    
@@ -116,18 +119,17 @@ def main():
     application.add_handler(CallbackQueryHandler(button_callback))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
    
-    # Запускаем бота
-    print("🤖 Бот запущен!")
-   
-    # Создаём event loop
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-   
     # Запускаем веб-сервер в фоне
-    loop.create_task(web_server())
+    asyncio.create_task(web_server())
    
-    # Запускаем бота
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+    # Инициализация и запуск бота
+    print("🤖 Бот запущен!")
+    await application.initialize()
+    await application.start()
+    await application.updater.start_polling(allowed_updates=Update.ALL_TYPES)
+   
+    # Держим бота запущенным
+    await asyncio.Event().wait()
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
